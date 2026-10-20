@@ -163,6 +163,8 @@
 
         ! claude: unlensed scalar BB, EB, TB from birefringence, Cl_biref(l, 1:3); zero unless birefringence_angle /= 0
         real(dl), dimension(:, :), allocatable :: Cl_biref  ! claude
+        ! claude: lensed EB, TB, Cl_lensed_biref(l, 1:2), Eqs. 36-37 of arXiv:2305.13976 (lensed BB is in Cl_lensed)
+        real(dl), dimension(:, :), allocatable :: Cl_lensed_biref  ! claude
     contains
     procedure :: InitCls => TCLdata_InitCls
     procedure :: output_cl_files => TCLdata_output_cl_files

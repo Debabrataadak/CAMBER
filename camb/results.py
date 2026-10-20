@@ -1293,8 +1293,9 @@ class CAMBdata(F2003Class):
 
         Unlensed spectra come from the line-of-sight integral, where the E source is multiplied by
         :math:`\cos 2\beta` and the B transfer is the E source times :math:`\sin 2\beta`, so EE and TE are the
-        rotated spectra. Lensed spectra use the fact that lensing and a constant rotation commute: the lensed
-        spectra of the rotated E field are rotated by :math:`\beta` (valid for constant :math:`\beta` only).
+        rotated spectra. Lensed spectra come from CAMB's curved-sky lensing applied to all unlensed spectra:
+        the unlensed BB enters the parity-even lensing, and EB, TB are lensed with the EE-BB and TE kernels
+        (Eqs. 30-32, 36-37 of arXiv:2305.13976). No constant-beta relation is used.
 
         :param lmax: lmax to output to
         :param CMB_unit: scale results from dimensionless. Use 'muK' for :math:`\mu K^2` units for CMB :math:`C_\ell`
@@ -1302,19 +1303,14 @@ class CAMBdata(F2003Class):
         :param lensed: return lensed rather than unlensed spectra
         :return: numpy array CL[0:lmax+1,0:6], where 0..5 indexes TT, EE, BB, TE, EB, TB
         """
-        beta = np.radians(self.Params.birefringence_angle)  # claude
         if lensed:  # claude
-            cls = self.get_lensed_scalar_cls(lmax, CMB_unit, raw_cl)  # claude
-            # claude: next line
-            # Lensed spectra were computed from the rotated E, so EE, BB, TE carry cos^2 2beta, cos^2 2beta, cos 2beta
-            t = np.tan(2 * beta)  # claude
-            res = np.zeros((cls.shape[0], 6))  # claude
-            res[:, 0] = cls[:, 0]  # claude
-            res[:, 1] = cls[:, 1] + t**2 * cls[:, 2]  # claude
-            res[:, 2] = cls[:, 2] + t**2 * cls[:, 1]  # claude
-            res[:, 3] = cls[:, 3]  # claude
-            res[:, 4] = t * (cls[:, 1] - cls[:, 2])  # claude
-            res[:, 5] = t * cls[:, 3]  # claude
+            cls = self.get_lensed_scalar_cls(lmax, CMB_unit, raw_cl)  # claude: TT, EE, BB, TE, lensed in Fortran
+            biref = np.empty((cls.shape[0], 2))  # claude
+            CAMB_SetLensedBirefringenceCls(byref(self), byref(c_int(cls.shape[0] - 1)), biref)  # claude
+            self._scale_cls(biref, CMB_unit, raw_cl)  # claude
+            res = np.empty((cls.shape[0], 6))  # claude
+            res[:, :4] = cls  # claude
+            res[:, 4:] = biref  # claude: lensed EB, TB
             return res  # claude
         cls = self.get_unlensed_scalar_cls(lmax, CMB_unit, raw_cl)  # claude
         biref = np.empty((cls.shape[0], 3))  # claude
@@ -1960,6 +1956,8 @@ CAMB_SetBirefringenceCls = camblib.__handles_MOD_camb_setbirefringencecls  # cla
 
 _set_cl_args = [POINTER(CAMBdata), int_arg, numpy_1d]
 CAMB_SetBirefringenceCls.argtypes = _set_cl_args  # claude
+CAMB_SetLensedBirefringenceCls = camblib.__handles_MOD_camb_setlensedbirefringencecls  # claude
+CAMB_SetLensedBirefringenceCls.argtypes = _set_cl_args  # claude
 
 CAMB_SetTotCls.argtypes = _set_cl_args
 CAMB_SetUnlensedCls.argtypes = _set_cl_args

@@ -646,6 +646,22 @@
 
     end subroutine CAMB_SetlensedScalCls
 
+    subroutine CAMB_SetLensedBirefringenceCls(Data, lmax, lensed_biref_Cls) ! claude
+    ! claude: lensed EB, TB from the lensing of the unlensed EB, TB (Eqs. 36-37 of arXiv:2305.13976)
+    type(CAMBdata) :: Data  ! claude
+    integer, intent(in) :: lmax  ! claude
+    real(dl), intent(out) :: lensed_biref_Cls(2, 0:lmax)  ! claude
+    integer lmx ! claude
+
+    lensed_biref_Cls = 0  ! claude
+    if (Data%CP%WantScalars .and. Data%CP%DoLensing .and. allocated(Data%CLdata%Cl_lensed_biref)) then  ! claude
+        lmx = min(lmax, Data%CLdata%lmax_lensed)  ! claude
+        ! claude: next line
+        lensed_biref_Cls(1:2, Data%CP%Min_l:lmx) = transpose(Data%CLdata%Cl_lensed_biref(Data%CP%Min_l:lmx, 1:2))
+    end if  ! claude
+
+    end subroutine CAMB_SetLensedBirefringenceCls  ! claude
+
     subroutine CAMB_SetTensorCls(Data, lmax, tensor_Cls)
     type(CAMBdata) :: Data
     integer, intent(in) :: lmax
