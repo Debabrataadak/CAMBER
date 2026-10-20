@@ -419,10 +419,11 @@ class CAMBparams(F2003Class):
         ("SourceWindows", AllocatableObjectArray(SourceWindow)),
         ("CustomSources", CustomSources),
         (  # claude: must stay last, matching the Fortran CAMBparams order
-            "birefringence_angle",
-            c_double,
+            "birefringence_angle",  # claude
+            c_double,  # claude
+            # claude: next line
             "Isotropic birefringence angle beta in degrees (flat, scalars); see CAMBdata.get_birefringence_cls",
-        ),
+        ),  # claude
     )
 
     H0: float

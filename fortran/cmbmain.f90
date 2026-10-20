@@ -91,9 +91,9 @@
 
     ! claude: birefringence. biref_cos2(n), biref_sin2(n) are cos 2beta and sin 2beta at time step n (constant
     ! claude: beta for now; per step so beta(tau) can be filled in later). iCl_biref(l_index, 1:3) = BB, EB, TB
-    logical :: DoBirefringence = .false.
-    real(dl), dimension(:), allocatable :: biref_cos2, biref_sin2
-    real(dl), dimension(:, :), allocatable :: iCl_biref
+    logical :: DoBirefringence = .false.  ! claude
+    real(dl), dimension(:), allocatable :: biref_cos2, biref_sin2  ! claude
+    real(dl), dimension(:, :), allocatable :: iCl_biref  ! claude
 
     real(dl), parameter :: qmin0 = 0.1_dl
 
@@ -1361,26 +1361,26 @@
 
     subroutine InitBirefringence(ThisCT) ! claude
     ! claude: set up the rotation factors at each time step and the B transfer array, for scalar runs with beta /= 0
-    type(ClTransferData) :: ThisCT
-    real(dl) :: beta_rad
+    type(ClTransferData) :: ThisCT  ! claude
+    real(dl) :: beta_rad  ! claude
 
-    if (allocated(ThisCT%Delta_B_l_k)) deallocate(ThisCT%Delta_B_l_k)
-    DoBirefringence = CP%WantScalars .and. CP%birefringence_angle /= 0._dl
-    if (.not. DoBirefringence) return
-    if (.not. State%flat) then
-        DoBirefringence = .false.
-        call GlobalError('birefringence_angle is only implemented for flat models', error_unsupported_params)
-        return
-    end if
-    beta_rad = CP%birefringence_angle*const_pi/180._dl
-    if (allocated(biref_cos2)) deallocate(biref_cos2)
-    if (allocated(biref_sin2)) deallocate(biref_sin2)
+    if (allocated(ThisCT%Delta_B_l_k)) deallocate(ThisCT%Delta_B_l_k)  ! claude
+    DoBirefringence = CP%WantScalars .and. CP%birefringence_angle /= 0._dl  ! claude
+    if (.not. DoBirefringence) return  ! claude
+    if (.not. State%flat) then  ! claude
+        DoBirefringence = .false.  ! claude
+        call GlobalError('birefringence_angle is only implemented for flat models', error_unsupported_params)  ! claude
+        return  ! claude
+    end if  ! claude
+    beta_rad = CP%birefringence_angle*const_pi/180._dl  ! claude
+    if (allocated(biref_cos2)) deallocate(biref_cos2)  ! claude
+    if (allocated(biref_sin2)) deallocate(biref_sin2)  ! claude
     ! claude: constant beta; for beta(tau) fill these from beta at State%TimeSteps%points(n)
-    allocate(biref_cos2(State%TimeSteps%npoints), source=cos(2*beta_rad))
-    allocate(biref_sin2(State%TimeSteps%npoints), source=sin(2*beta_rad))
-    allocate(ThisCT%Delta_B_l_k(size(ThisCT%Delta_p_l_k, 2), ThisCT%q%npoints), source=0._dl)
+    allocate(biref_cos2(State%TimeSteps%npoints), source=cos(2*beta_rad))  ! claude
+    allocate(biref_sin2(State%TimeSteps%npoints), source=sin(2*beta_rad))  ! claude
+    allocate(ThisCT%Delta_B_l_k(size(ThisCT%Delta_p_l_k, 2), ThisCT%q%npoints), source=0._dl)  ! claude
 
-    end subroutine InitBirefringence
+    end subroutine InitBirefringence  ! claude
 
     subroutine InterpolateSources(IV)
     implicit none
@@ -1895,20 +1895,20 @@
         if (DoBirefringence .and. DoInt) then ! claude
             ! claude: rotate the E source inside the time integral (Eq. 7 of arXiv:2506.20824):
             ! claude: Delta_E = int S_E j_l cos 2beta(tau) dtau,  Delta_B = int S_E j_l sin 2beta(tau) dtau
-            sum_Ecos = 0
-            sum_Esin = 0
-            do n = State%TimeSteps%IndexOf(tmin), min(IV%SourceSteps, State%TimeSteps%IndexOf(tmax))
-                a2 = left_weight(n)
-                bes_ix = bes_index(n)
-                J_l = bessel_horner(1, bes_ix, j) + a2*(bessel_horner(2, bes_ix, j) + &
-                    a2*(bessel_horner(3, bes_ix, j) + a2*bessel_horner(4, bes_ix, j)))
-                J_l = J_l*State%TimeSteps%dpoints(n)
-                sum_Ecos = sum_Ecos + IV%Source_q(n, 2)*J_l*biref_cos2(n)
-                sum_Esin = sum_Esin + IV%Source_q(n, 2)*J_l*biref_sin2(n)
-            end do
-            sums(2) = sum_Ecos
-            ThisCT%Delta_B_l_k(j, IV%q_ix) = ThisCT%Delta_B_l_k(j, IV%q_ix) + sum_Esin
-        end if
+            sum_Ecos = 0  ! claude
+            sum_Esin = 0  ! claude
+            do n = State%TimeSteps%IndexOf(tmin), min(IV%SourceSteps, State%TimeSteps%IndexOf(tmax))  ! claude
+                a2 = left_weight(n)  ! claude
+                bes_ix = bes_index(n)  ! claude
+                J_l = bessel_horner(1, bes_ix, j) + a2*(bessel_horner(2, bes_ix, j) + &  ! claude
+                    a2*(bessel_horner(3, bes_ix, j) + a2*bessel_horner(4, bes_ix, j)))  ! claude
+                J_l = J_l*State%TimeSteps%dpoints(n)  ! claude
+                sum_Ecos = sum_Ecos + IV%Source_q(n, 2)*J_l*biref_cos2(n)  ! claude
+                sum_Esin = sum_Esin + IV%Source_q(n, 2)*J_l*biref_sin2(n)  ! claude
+            end do  ! claude
+            sums(2) = sum_Ecos  ! claude
+            ThisCT%Delta_B_l_k(j, IV%q_ix) = ThisCT%Delta_B_l_k(j, IV%q_ix) + sum_Esin  ! claude
+        end if  ! claude
 
         ThisCT%Delta_p_l_k(:, j, IV%q_ix) = ThisCT%Delta_p_l_k(:, j, IV%q_ix) + sums
     end do
@@ -3261,6 +3261,7 @@
 #ifndef __INTEL_COMPILER
     ! Can't use OpenMP here on ifort. Does not terminate.
     !$OMP PARALLEL DO DEFAULT(SHARED), SCHEDULE(STATIC, 4), &
+    ! claude: next line
     !$OMP PRIVATE(ell, q_ix, dlnk, apowers, ctnorm, dbletmp, Delta1, Delta2, w_ix, w_ix2, fac, nscal, i, DeltaB)
 #endif
     do j = 1, CTrans%ls%nl
@@ -3279,11 +3280,13 @@
                     iCl_scalar(j, C_Cross) = iCl_scalar(j, C_Cross) + &
                         apowers*CTrans%Delta_p_l_k(1, j, q_ix)*CTrans%Delta_p_l_k(2, j, q_ix)*dlnk
                     if (do_biref) then ! claude: C_l^XY = 4pi int dlnk P Delta_X Delta_Y (Eq. 12 of arXiv:2506.20824)
-                        DeltaB = CTrans%Delta_B_l_k(j, q_ix)
-                        iCl_biref(j, 1) = iCl_biref(j, 1) + apowers*DeltaB**2*dlnk ! BB
+                        DeltaB = CTrans%Delta_B_l_k(j, q_ix)  ! claude
+                        iCl_biref(j, 1) = iCl_biref(j, 1) + apowers*DeltaB**2*dlnk ! BB  ! claude
+                        ! claude: next line
                         iCl_biref(j, 2) = iCl_biref(j, 2) + apowers*CTrans%Delta_p_l_k(2, j, q_ix)*DeltaB*dlnk ! EB
+                        ! claude: next line
                         iCl_biref(j, 3) = iCl_biref(j, 3) + apowers*CTrans%Delta_p_l_k(1, j, q_ix)*DeltaB*dlnk ! TB
-                    end if
+                    end if  ! claude
 
                     if (CTrans%NumSources > 2 .and. State%CP%Want_cl_2D_Array) then
 
@@ -3391,9 +3394,9 @@
         iCl_scalar(j, C_E) = iCl_scalar(j, C_E)*dbletmp*ctnorm
         iCl_scalar(j, C_Cross) = iCl_scalar(j, C_Cross)*dbletmp*sqrt(ctnorm)
         if (do_biref) then ! claude: same normalization as EE (pol x pol) and TE (T x pol)
-            iCl_biref(j, 1:2) = iCl_biref(j, 1:2)*dbletmp*ctnorm
-            iCl_biref(j, 3) = iCl_biref(j, 3)*dbletmp*sqrt(ctnorm)
-        end if
+            iCl_biref(j, 1:2) = iCl_biref(j, 1:2)*dbletmp*ctnorm  ! claude
+            iCl_biref(j, 3) = iCl_biref(j, 3)*dbletmp*sqrt(ctnorm)  ! claude
+        end if  ! claude
         if (CTrans%NumSources > 2) then
             iCl_scalar(j, C_Phi) = CP%Alens*iCl_scalar(j, C_Phi)*const_fourpi*ell**4
             ! The lensing power spectrum computed is l^4 C_l^{\phi\phi}
@@ -3605,20 +3608,22 @@
             do i = C_Temp, State%Scalar_C_last
                 ! claude: with birefringence EE and TE carry cos^2 2beta and cos 2beta; divide that out so the
                 ! claude: unrotated template still matches, interpolate, then multiply back (exact for constant beta)
-                rotfac = 1
-                if (allocated(iCl_biref)) then
-                    if (i == C_E) rotfac = cos(2*CP%birefringence_angle*const_pi/180._dl)**2
-                    if (i == C_Cross) rotfac = cos(2*CP%birefringence_angle*const_pi/180._dl)
-                    if (abs(rotfac) < 0.1_dl) rotfac = 1
-                end if
-                if (rotfac == 1) then
+                rotfac = 1  ! claude
+                if (allocated(iCl_biref)) then  ! claude
+                    if (i == C_E) rotfac = cos(2*CP%birefringence_angle*const_pi/180._dl)**2  ! claude
+                    if (i == C_Cross) rotfac = cos(2*CP%birefringence_angle*const_pi/180._dl)  ! claude
+                    if (abs(rotfac) < 0.1_dl) rotfac = 1  ! claude
+                end if  ! claude
+                if (rotfac == 1) then  ! claude
+                    ! claude: next line
                     call lSet%InterpolateClArrTemplated(iCl_scalar(1, i), State%CLdata%Cl_scalar(lSet%lmin, i), &
-                        lSet%nl, i)
-                else
-                    iCl_unrot(1:lSet%nl) = iCl_scalar(1:lSet%nl, i)/rotfac
+                        lSet%nl, i)  ! claude
+                else  ! claude
+                    iCl_unrot(1:lSet%nl) = iCl_scalar(1:lSet%nl, i)/rotfac  ! claude
+                    ! claude: next line
                     call lSet%InterpolateClArrTemplated(iCl_unrot, State%CLdata%Cl_scalar(lSet%lmin, i), lSet%nl, i)
-                    State%CLdata%Cl_scalar(:, i) = State%CLdata%Cl_scalar(:, i)*rotfac
-                end if
+                    State%CLdata%Cl_scalar(:, i) = State%CLdata%Cl_scalar(:, i)*rotfac  ! claude
+                end if  ! claude
             end do
             if (allocated(iCl_biref)) call InterpolateBirefringenceCls(lSet) ! claude
 
@@ -3660,21 +3665,21 @@
     ! claude: BB and EB follow the rotated EE, and TB the rotated TE, which are already accurately interpolated.
     ! claude: Spline only the difference from a least-squares multiple of that parent spectrum, then add the
     ! claude: multiple back; for constant beta the difference is zero, so no plain-spline error between computed L
-    class(lSamples), intent(in) :: lSet
-    integer, parameter :: parent(3) = [C_E, C_E, C_Cross]
-    integer i
-    real(dl) norm, coeff, DeltaCl(lSet%nl)
+    class(lSamples), intent(in) :: lSet  ! claude
+    integer, parameter :: parent(3) = [C_E, C_E, C_Cross]  ! claude
+    integer i ! claude
+    real(dl) norm, coeff, DeltaCl(lSet%nl) ! claude
 
-    do i = 1, 3
-        norm = sum(iCl_scalar(1:lSet%nl, parent(i))**2)
-        coeff = 0
-        if (norm > 0) coeff = sum(iCl_biref(1:lSet%nl, i)*iCl_scalar(1:lSet%nl, parent(i)))/norm
-        DeltaCl = iCl_biref(1:lSet%nl, i) - coeff*iCl_scalar(1:lSet%nl, parent(i))
-        call lSet%InterpolateClArr(DeltaCl, State%CLdata%Cl_biref(lSet%lmin, i))
-        State%CLdata%Cl_biref(:, i) = State%CLdata%Cl_biref(:, i) + coeff*State%CLdata%Cl_scalar(:, parent(i))
-    end do
+    do i = 1, 3  ! claude
+        norm = sum(iCl_scalar(1:lSet%nl, parent(i))**2)  ! claude
+        coeff = 0  ! claude
+        if (norm > 0) coeff = sum(iCl_biref(1:lSet%nl, i)*iCl_scalar(1:lSet%nl, parent(i)))/norm  ! claude
+        DeltaCl = iCl_biref(1:lSet%nl, i) - coeff*iCl_scalar(1:lSet%nl, parent(i))  ! claude
+        call lSet%InterpolateClArr(DeltaCl, State%CLdata%Cl_biref(lSet%lmin, i))  ! claude
+        State%CLdata%Cl_biref(:, i) = State%CLdata%Cl_biref(:, i) + coeff*State%CLdata%Cl_scalar(:, parent(i))  ! claude
+    end do  ! claude
 
-    end subroutine InterpolateBirefringenceCls
+    end subroutine InterpolateBirefringenceCls  ! claude
 
     subroutine CAMBMain_Free
     ! Not needed, only used to clean up for mem leak testing

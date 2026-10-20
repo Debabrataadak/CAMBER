@@ -1302,28 +1302,29 @@ class CAMBdata(F2003Class):
         :param lensed: return lensed rather than unlensed spectra
         :return: numpy array CL[0:lmax+1,0:6], where 0..5 indexes TT, EE, BB, TE, EB, TB
         """
-        beta = np.radians(self.Params.birefringence_angle)
-        if lensed:
-            cls = self.get_lensed_scalar_cls(lmax, CMB_unit, raw_cl)
+        beta = np.radians(self.Params.birefringence_angle)  # claude
+        if lensed:  # claude
+            cls = self.get_lensed_scalar_cls(lmax, CMB_unit, raw_cl)  # claude
+            # claude: next line
             # Lensed spectra were computed from the rotated E, so EE, BB, TE carry cos^2 2beta, cos^2 2beta, cos 2beta
-            t = np.tan(2 * beta)
-            res = np.zeros((cls.shape[0], 6))
-            res[:, 0] = cls[:, 0]
-            res[:, 1] = cls[:, 1] + t**2 * cls[:, 2]
-            res[:, 2] = cls[:, 2] + t**2 * cls[:, 1]
-            res[:, 3] = cls[:, 3]
-            res[:, 4] = t * (cls[:, 1] - cls[:, 2])
-            res[:, 5] = t * cls[:, 3]
-            return res
-        cls = self.get_unlensed_scalar_cls(lmax, CMB_unit, raw_cl)
-        biref = np.empty((cls.shape[0], 3))
-        CAMB_SetBirefringenceCls(byref(self), byref(c_int(cls.shape[0] - 1)), biref)
-        self._scale_cls(biref, CMB_unit, raw_cl)
-        res = np.empty((cls.shape[0], 6))
-        res[:, :4] = cls
-        res[:, 2] = biref[:, 0]
-        res[:, 4:] = biref[:, 1:]
-        return res
+            t = np.tan(2 * beta)  # claude
+            res = np.zeros((cls.shape[0], 6))  # claude
+            res[:, 0] = cls[:, 0]  # claude
+            res[:, 1] = cls[:, 1] + t**2 * cls[:, 2]  # claude
+            res[:, 2] = cls[:, 2] + t**2 * cls[:, 1]  # claude
+            res[:, 3] = cls[:, 3]  # claude
+            res[:, 4] = t * (cls[:, 1] - cls[:, 2])  # claude
+            res[:, 5] = t * cls[:, 3]  # claude
+            return res  # claude
+        cls = self.get_unlensed_scalar_cls(lmax, CMB_unit, raw_cl)  # claude
+        biref = np.empty((cls.shape[0], 3))  # claude
+        CAMB_SetBirefringenceCls(byref(self), byref(c_int(cls.shape[0] - 1)), biref)  # claude
+        self._scale_cls(biref, CMB_unit, raw_cl)  # claude
+        res = np.empty((cls.shape[0], 6))  # claude
+        res[:, :4] = cls  # claude
+        res[:, 2] = biref[:, 0]  # claude
+        res[:, 4:] = biref[:, 1:]  # claude
+        return res  # claude
 
     def get_lens_potential_cls(self, lmax=None, CMB_unit=None, raw_cl=False):
         r"""

@@ -197,7 +197,7 @@
 
         ! claude: isotropic cosmic birefringence angle beta in degrees. E is multiplied by cos 2beta and
         ! claude: B = E x sin 2beta inside the line-of-sight integral (flat models, scalar modes only)
-        real(dl) :: birefringence_angle = 0._dl
+        real(dl) :: birefringence_angle = 0._dl  ! claude
     contains
     procedure, nopass :: PythonClass => CAMBparams_PythonClass
     procedure, nopass :: SelfPointer => CAMBparams_SelfPointer

@@ -132,7 +132,7 @@
         type(TRanges) :: q
         real(dl), dimension(:, :, :), allocatable :: Delta_p_l_k
         ! claude: rotated B-mode transfer Delta_B(l_index, q_index) = int (E source) sin 2beta j_l, birefringence only
-        real(dl), dimension(:, :), allocatable :: Delta_B_l_k
+        real(dl), dimension(:, :), allocatable :: Delta_B_l_k  ! claude
 
         ! The L index of the lowest L to use for Limber
         integer, dimension(:), allocatable :: Limber_l_min
@@ -162,7 +162,7 @@
         ! Cl_lensed(l, Cl_type) are the interpolated Cls
 
         ! claude: unlensed scalar BB, EB, TB from birefringence, Cl_biref(l, 1:3); zero unless birefringence_angle /= 0
-        real(dl), dimension(:, :), allocatable :: Cl_biref
+        real(dl), dimension(:, :), allocatable :: Cl_biref  ! claude
     contains
     procedure :: InitCls => TCLdata_InitCls
     procedure :: output_cl_files => TCLdata_output_cl_files
