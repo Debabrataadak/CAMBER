@@ -1286,6 +1286,45 @@ class CAMBdata(F2003Class):
         self._scale_cls(res, CMB_unit, raw_cl)
         return res
 
+    def get_birefringence_cls(self, lmax=None, CMB_unit=None, raw_cl=False, lensed=False):  # claude
+        r"""
+        Get scalar CMB power spectra including isotropic cosmic birefringence by the angle
+        :attr:`~.model.CAMBparams.birefringence_angle` (degrees). Must have already calculated power spectra.
+
+        Unlensed spectra come from the line-of-sight integral, where the E source is multiplied by
+        :math:`\cos 2\beta` and the B transfer is the E source times :math:`\sin 2\beta`, so EE and TE are the
+        rotated spectra. Lensed spectra use the fact that lensing and a constant rotation commute: the lensed
+        spectra of the rotated E field are rotated by :math:`\beta` (valid for constant :math:`\beta` only).
+
+        :param lmax: lmax to output to
+        :param CMB_unit: scale results from dimensionless. Use 'muK' for :math:`\mu K^2` units for CMB :math:`C_\ell`
+        :param raw_cl: return :math:`C_\ell` rather than :math:`\ell(\ell+1)C_\ell/2\pi`
+        :param lensed: return lensed rather than unlensed spectra
+        :return: numpy array CL[0:lmax+1,0:6], where 0..5 indexes TT, EE, BB, TE, EB, TB
+        """
+        beta = np.radians(self.Params.birefringence_angle)
+        if lensed:
+            cls = self.get_lensed_scalar_cls(lmax, CMB_unit, raw_cl)
+            # Lensed spectra were computed from the rotated E, so EE, BB, TE carry cos^2 2beta, cos^2 2beta, cos 2beta
+            t = np.tan(2 * beta)
+            res = np.zeros((cls.shape[0], 6))
+            res[:, 0] = cls[:, 0]
+            res[:, 1] = cls[:, 1] + t**2 * cls[:, 2]
+            res[:, 2] = cls[:, 2] + t**2 * cls[:, 1]
+            res[:, 3] = cls[:, 3]
+            res[:, 4] = t * (cls[:, 1] - cls[:, 2])
+            res[:, 5] = t * cls[:, 3]
+            return res
+        cls = self.get_unlensed_scalar_cls(lmax, CMB_unit, raw_cl)
+        biref = np.empty((cls.shape[0], 3))
+        CAMB_SetBirefringenceCls(byref(self), byref(c_int(cls.shape[0] - 1)), biref)
+        self._scale_cls(biref, CMB_unit, raw_cl)
+        res = np.empty((cls.shape[0], 6))
+        res[:, :4] = cls
+        res[:, 2] = biref[:, 0]
+        res[:, 4:] = biref[:, 1:]
+        return res
+
     def get_lens_potential_cls(self, lmax=None, CMB_unit=None, raw_cl=False):
         r"""
         Get lensing deflection angle potential power spectrum, and cross-correlation with T and E. Must have already
@@ -1916,8 +1955,10 @@ CAMB_SetLensPotentialCls = camblib.__handles_MOD_camb_setlenspotentialcls
 CAMB_SetUnlensedScalCls = camblib.__handles_MOD_camb_setunlensedscalcls
 CAMB_SetLensedScalCls = camblib.__handles_MOD_camb_setlensedscalcls
 CAMB_SetTensorCls = camblib.__handles_MOD_camb_settensorcls
+CAMB_SetBirefringenceCls = camblib.__handles_MOD_camb_setbirefringencecls  # claude
 
 _set_cl_args = [POINTER(CAMBdata), int_arg, numpy_1d]
+CAMB_SetBirefringenceCls.argtypes = _set_cl_args  # claude
 
 CAMB_SetTotCls.argtypes = _set_cl_args
 CAMB_SetUnlensedCls.argtypes = _set_cl_args

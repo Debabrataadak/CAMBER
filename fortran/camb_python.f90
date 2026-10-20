@@ -616,6 +616,21 @@
 
     end subroutine CAMB_SetUnlensedScalCls
 
+    subroutine CAMB_SetBirefringenceCls(Data, lmax, biref_Cls) ! claude
+    ! claude: unlensed scalar BB, EB, TB from the birefringence line-of-sight integral (zero if beta = 0)
+    type(CAMBdata) :: Data
+    integer, intent(in) :: lmax
+    real(dl), intent(out) :: biref_Cls(3, 0:lmax)
+    integer lmx
+
+    biref_Cls = 0
+    if (Data%CP%WantScalars .and. allocated(Data%CLdata%Cl_biref)) then
+        lmx = min(Data%CP%Max_l, lmax)
+        biref_Cls(1:3, Data%CP%Min_l:lmx) = transpose(Data%CLdata%Cl_biref(Data%CP%Min_l:lmx, 1:3))
+    end if
+
+    end subroutine CAMB_SetBirefringenceCls
+
     subroutine CAMB_SetlensedScalCls(Data, lmax, lensed_Cls)
     type(CAMBdata) Data
     integer, intent(in) :: lmax

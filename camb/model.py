@@ -418,6 +418,11 @@ class CAMBparams(F2003Class):
         ("min_l_logl_sampling", c_int, "Minimum L to use log sampling for L"),
         ("SourceWindows", AllocatableObjectArray(SourceWindow)),
         ("CustomSources", CustomSources),
+        (  # claude: must stay last, matching the Fortran CAMBparams order
+            "birefringence_angle",
+            c_double,
+            "Isotropic birefringence angle beta in degrees (flat, scalars); see CAMBdata.get_birefringence_cls",
+        ),
     )
 
     H0: float

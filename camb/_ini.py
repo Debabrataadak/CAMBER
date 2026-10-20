@@ -135,6 +135,8 @@ def _update_ini_state_from_params(params: model.CAMBparams, state: CambIniFile) 
             state.set_sequence("nu_mass_degeneracies", params.nu_mass_degeneracies[: params.nu_mass_eigenstates])
         state.set_sequence("nu_mass_fractions", params.nu_mass_fractions[: params.nu_mass_eigenstates])
     state.set("Alens", params.Alens)
+    if params.birefringence_angle:  # claude
+        state.set("birefringence_angle", params.birefringence_angle)
     state.set("derived_parameters", params.WantDerivedParameters)
     state.set("accurate_polarization", params.Accuracy.AccuratePolarization)
     state.set("accurate_reionization", params.Accuracy.AccurateReionization)
