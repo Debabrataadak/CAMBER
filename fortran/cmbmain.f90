@@ -53,7 +53,7 @@
 
     use precision
     use results
-    use Interpolation, only: cubic_spline_second_derivs
+    use Interpolation, only: cubic_spline_second_derivs, TCubicSpline ! claude: TCubicSpline for beta(z)
     use GaugeInterface
     use HypersphericalBesselOlver, only: u_olver, phi_olver
     use SpherBessels
@@ -1363,21 +1363,44 @@
     ! claude: set up the rotation factors at each time step and the B transfer array, for scalar runs with beta /= 0
     type(ClTransferData) :: ThisCT  ! claude
     real(dl) :: beta_rad  ! claude
+    integer :: i, nsteps  ! claude
+    real(dl), allocatable :: z_steps(:)  ! claude
+    real(dl) :: zmin, zmax, zz  ! claude
+    type(TCubicSpline) :: beta_of_z  ! claude
 
     if (allocated(ThisCT%Delta_B_l_k)) deallocate(ThisCT%Delta_B_l_k)  ! claude
-    DoBirefringence = CP%WantScalars .and. CP%birefringence_angle /= 0._dl  ! claude
+    DoBirefringence = CP%WantScalars .and. HasBirefringence(CP)  ! claude
     if (.not. DoBirefringence) return  ! claude
     if (.not. State%flat) then  ! claude
         DoBirefringence = .false.  ! claude
         call GlobalError('birefringence_angle is only implemented for flat models', error_unsupported_params)  ! claude
         return  ! claude
     end if  ! claude
-    beta_rad = CP%birefringence_angle*const_pi/180._dl  ! claude
+    nsteps = State%TimeSteps%npoints  ! claude
     if (allocated(biref_cos2)) deallocate(biref_cos2)  ! claude
     if (allocated(biref_sin2)) deallocate(biref_sin2)  ! claude
-    ! claude: constant beta; for beta(tau) fill these from beta at State%TimeSteps%points(n)
-    allocate(biref_cos2(State%TimeSteps%npoints), source=cos(2*beta_rad))  ! claude
-    allocate(biref_sin2(State%TimeSteps%npoints), source=sin(2*beta_rad))  ! claude
+    allocate(biref_cos2(nsteps), biref_sin2(nsteps))  ! claude
+    if (BirefringenceTableSet(CP)) then  ! claude
+        ! claude: time-varying beta: redshift of each line-of-sight time step, then beta(z) by cubic spline in z;
+        ! claude: outside the table range the end values are used
+        allocate(z_steps(nsteps))  ! claude
+        call State%RedshiftAtTimeArr(z_steps, State%TimeSteps%points(1:nsteps), nsteps)  ! claude
+        call beta_of_z%Init(CP%birefringence_z, CP%birefringence_beta)  ! claude
+        zmin = CP%birefringence_z(1)  ! claude
+        zmax = CP%birefringence_z(size(CP%birefringence_z))  ! claude
+        do i = 1, nsteps  ! claude
+            zz = z_steps(i)  ! claude
+            if (State%TimeSteps%points(i) <= 0 .or. .not. (zz < zmax)) zz = zmax  ! claude: also catches z = inf, NaN
+            zz = max(zz, zmin)  ! claude
+            beta_rad = beta_of_z%Value(zz)*const_pi/180._dl  ! claude
+            biref_cos2(i) = cos(2*beta_rad)  ! claude
+            biref_sin2(i) = sin(2*beta_rad)  ! claude
+        end do  ! claude
+    else  ! claude
+        beta_rad = CP%birefringence_angle*const_pi/180._dl  ! claude: constant beta
+        biref_cos2 = cos(2*beta_rad)  ! claude
+        biref_sin2 = sin(2*beta_rad)  ! claude
+    end if  ! claude
     allocate(ThisCT%Delta_B_l_k(size(ThisCT%Delta_p_l_k, 2), ThisCT%q%npoints), source=0._dl)  ! claude
 
     end subroutine InitBirefringence  ! claude
@@ -3609,7 +3632,8 @@
                 ! claude: with birefringence EE and TE carry cos^2 2beta and cos 2beta; divide that out so the
                 ! claude: unrotated template still matches, interpolate, then multiply back (exact for constant beta)
                 rotfac = 1  ! claude
-                if (allocated(iCl_biref)) then  ! claude
+                ! claude: only valid for a constant angle; with a beta(z) table there is no single cos 2beta
+                if (allocated(iCl_biref) .and. .not. BirefringenceTableSet(CP)) then  ! claude
                     if (i == C_E) rotfac = cos(2*CP%birefringence_angle*const_pi/180._dl)**2  ! claude
                     if (i == C_Cross) rotfac = cos(2*CP%birefringence_angle*const_pi/180._dl)  ! claude
                     if (abs(rotfac) < 0.1_dl) rotfac = 1  ! claude

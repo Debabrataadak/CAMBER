@@ -424,6 +424,8 @@ class CAMBparams(F2003Class):
             # claude: next line
             "Isotropic birefringence angle beta in degrees (flat, scalars); see CAMBdata.get_birefringence_cls",
         ),  # claude
+        ("birefringence_z", AllocatableArrayDouble, "redshifts (increasing) of a beta(z) table"),  # claude
+        ("birefringence_beta", AllocatableArrayDouble, "beta(z) in degrees; overrides birefringence_angle"),  # claude
     )
 
     H0: float
@@ -1024,6 +1026,32 @@ class CAMBparams(F2003Class):
                 self.NonLinear = NonLinear_pk
             else:
                 self.NonLinear = NonLinear_none
+
+    def set_birefringence_table(self, z=None, beta=None):  # claude
+        r"""
+        Set a time-varying cosmic birefringence angle :math:`\beta(z)`: the rotation, in degrees, of the polarization
+        of a photon emitted at redshift z. It is interpolated with a cubic spline in z at each line-of-sight time step
+        and replaces :attr:`birefringence_angle`. Below the smallest and above the largest z the end values are used,
+        so the table should cover the redshifts that emit CMB polarization (reionization and recombination).
+        Call with no arguments to remove the table.
+
+        :param z: redshifts, strictly increasing, at least two points
+        :param beta: rotation angle in degrees at each redshift
+        :return: self
+        """
+        if z is None:  # claude
+            self.birefringence_z = []  # claude
+            self.birefringence_beta = []  # claude
+            return self  # claude
+        z = np.asarray(z, dtype=np.float64)  # claude
+        beta = np.asarray(beta, dtype=np.float64)  # claude
+        if z.ndim != 1 or z.shape != beta.shape or z.size < 2:  # claude
+            raise CAMBValueError("z and beta must be 1D arrays of the same length (at least 2 points)")  # claude
+        if np.any(np.diff(z) <= 0):  # claude
+            raise CAMBValueError("birefringence table redshifts must be strictly increasing")  # claude
+        self.birefringence_z = z  # claude
+        self.birefringence_beta = beta  # claude
+        return self  # claude
 
     def set_for_lmax(
         self,

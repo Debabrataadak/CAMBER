@@ -391,7 +391,7 @@
     class(CAMBdata), intent(in) :: State  ! claude
     type(TCLdata), intent(in) :: CL  ! claude
 
-    has = State%CP%birefringence_angle /= 0._dl .and. allocated(CL%Cl_biref)  ! claude
+    has = HasBirefringence(State%CP) .and. allocated(CL%Cl_biref)  ! claude: constant angle or beta(z) table
 
     end function HasBirefringenceCls  ! claude
 
