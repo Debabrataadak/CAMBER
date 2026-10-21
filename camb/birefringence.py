@@ -3,7 +3,7 @@ r"""
 Time-varying cosmic birefringence from an axion-like field.
 
 A spectator pseudoscalar :math:`\phi` with potential :math:`V=m^2\phi^2/2`, coupled to photons by
-:math:`-\frac14 g\phi F\tilde F`, rotates the polarization of a photon emitted at conformal time :math:`\eta` by
+:math:`-1/4 g\phi F\tilde F`, rotates the polarization of a photon emitted at conformal time :math:`\eta` by
 
 .. math:: \beta(\eta) = \frac{g}{2}\left[\phi(\eta_0)-\phi(\eta)\right] = \beta_{\rm ini}\,[f(\eta)-f(\eta_0)],
           \qquad f=\phi/\phi_{\rm ini},\quad \beta_{\rm ini}=-g\phi_{\rm ini}/2
@@ -36,8 +36,10 @@ def solve_axion_field(results, mass_ev, a_ini=1e-8, wkb_ratio=1000.0, rtol=1e-10
     r"""
     Solve :math:`f'' + (3 + d\ln H/d\ln a) f' + (m/H)^2 f = 0` in :math:`x = \ln a`, with :math:`f = 1, f' = 0` at
     ``a_ini``. Once :math:`m/H` exceeds ``wkb_ratio`` the field oscillates with an amplitude decaying as
-    :math:`a^{-3/2}`; integration stops there and :math:`f` is taken as zero afterwards (an error below
-    :math:`(H/m)^{3/2}`, i.e. < 3e-5 for the default).
+    :math:`a^{-3/2}`; integration stops there and :math:`f` is taken as zero afterwards. The neglected oscillation
+    has amplitude :math:`\sim (H/m)^{3/4}` in the radiation era and :math:`\sim (H/m)` in the matter era (8e-3 and
+    1.5e-3 for the default); it is fast and averages out in the line-of-sight integral (raising ``wkb_ratio`` to
+    1e4 changes EB by < 1e-7 for m <= 1e-27 eV).
 
     :return: (dense solution of (f, f') in x, x where integration stopped, f today)
     """
