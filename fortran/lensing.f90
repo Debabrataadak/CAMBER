@@ -116,13 +116,13 @@
 
     method = effective_lensing_method(State%CP)
 
-    if (HasBirefringenceCls(State, State%CLdata) .and. method /= lensing_method_curv_corr .and. & ! claude
-        method /= lensing_method_curv_corr_full) then  ! claude
-        ! claude: next line
+    if (HasBirefringenceCls(State, State%CLdata) .and. method /= lensing_method_curv_corr .and. & ! modified
+        method /= lensing_method_curv_corr_full) then  ! modified
+        ! modified: next line
         call GlobalError('birefringence lensing (EB, TB) is only implemented for the curved-sky lensing methods', &
-            error_unsupported_params) ! claude
-        return  ! claude
-    end if  ! claude
+            error_unsupported_params) ! modified
+        return  ! modified
+    end if  ! modified
     if (method == lensing_method_curv_corr .or. method == lensing_method_curv_corr_full) then
         call LensClsWithDefaultSpectrum(State, method == lensing_method_curv_corr_full)
     else if (method == lensing_method_flat_corr) then
@@ -250,8 +250,8 @@
     end associate
     if (allocated(CLout%Cl_lensed)) deallocate(CLout%Cl_lensed)
     allocate(CLout%Cl_lensed(lmin:CLout%lmax_lensed, 1:4), source=0._dl)
-    if (allocated(CLout%Cl_lensed_biref)) deallocate(CLout%Cl_lensed_biref) ! claude
-    allocate(CLout%Cl_lensed_biref(lmin:CLout%lmax_lensed, 1:2), source=0._dl) ! claude: lensed EB, TB
+    if (allocated(CLout%Cl_lensed_biref)) deallocate(CLout%Cl_lensed_biref) ! modified
+    allocate(CLout%Cl_lensed_biref(lmin:CLout%lmax_lensed, 1:2), source=0._dl) ! modified: lensed EB, TB
 
     end subroutine InitLensedClArrays
 
@@ -286,8 +286,8 @@
 
     end function LensingPhiWeight
 
-    subroutine PrepareLensedCLSpectra(State, CL, lmin, lmax, ee_taper, flat_sky, CPP, Cphil3, CTT, CEE, CTE, &  ! claude
-        CBB, CEB, CTB) ! claude: optional unlensed BB, EB, TB (birefringence)
+    subroutine PrepareLensedCLSpectra(State, CL, lmin, lmax, ee_taper, flat_sky, CPP, Cphil3, CTT, CEE, CTE, &  ! modified
+        CBB, CEB, CTB) ! modified: optional unlensed BB, EB, TB (birefringence)
     ! Weighted unlensed spectra and lensing potential entering the correlation function
     ! integrands, extended above CP%Max_l using the (rescaled) high-L template.
     ! Sets global error (via AmplitudeError) if the lensing spectrum is unrealistically large.
@@ -298,11 +298,11 @@
     logical, intent(in) :: flat_sky ! use the flat-sky rather than curved-sky l weights
     real(dl), intent(in) :: CPP(0:State%CP%Max_l) ! [L(L+1)]^2 C_L_phi_phi/2pi
     real(dl), intent(out) :: Cphil3(lmin:lmax), CTT(lmin:lmax), CEE(lmin:lmax), CTE(lmin:lmax)
-    real(dl), intent(out), optional :: CBB(lmin:lmax), CEB(lmin:lmax), CTB(lmin:lmax) ! claude
+    real(dl), intent(out), optional :: CBB(lmin:lmax), CEB(lmin:lmax), CTB(lmin:lmax) ! modified
     integer :: l
     real(dl) :: sc, fac, fac2, fac3, tail_te_fac
-    real(dl) :: rat_bb, rat_eb, rat_tb ! claude
-    integer :: l0 ! claude
+    real(dl) :: rat_bb, rat_eb, rat_tb ! modified
+    integer :: l0 ! modified
 
     associate(CP => State%CP)
         do l = lmin, CP%Max_l
@@ -339,33 +339,33 @@
                 call MpiStop('You need to normalize the high-L template so it is dimensionless')
             end if
         end if
-        if (present(CBB)) then ! claude: unlensed BB, EB, TB from the line-of-sight integral (Cl_biref)
-            ! claude: same weight and low-L taper as EE for the polarization spectra BB, EB; same weight as TE for TB
-            do l = lmin, CP%Max_l  ! claude
-                fac = LensingClWeight(l, flat_sky)  ! claude
-                CBB(l) = CL%Cl_biref(l, 1)*fac  ! claude
-                CEB(l) = CL%Cl_biref(l, 2)*fac  ! claude
-                if (ee_taper) then  ! claude
-                    CBB(l) = CBB(l)*LowLEELensingTaper(l)  ! claude
-                    CEB(l) = CEB(l)*LowLEELensingTaper(l)  ! claude
-                end if  ! claude
-                CTB(l) = CL%Cl_biref(l, 3)*fac  ! claude
-            end do  ! claude
-            if (lmax > CP%Max_l) then  ! claude
-                ! claude: no template exists above Max_l, so extend each spectrum with the shape of its parent
-                ! claude: (EE for BB and EB, TE for TB), scaled by its own least-squares ratio to that parent over
-                ! claude: the last 200 L below Max_l. Only the high-L tail is affected; tested by raising Max_l
-                l0 = max(lmin, CP%Max_l - 200)  ! claude
-                rat_bb = TailRatio(CL%Cl_biref(l0:CP%Max_l, 1), CL%Cl_scalar(l0:CP%Max_l, C_E))  ! claude
-                rat_eb = TailRatio(CL%Cl_biref(l0:CP%Max_l, 2), CL%Cl_scalar(l0:CP%Max_l, C_E))  ! claude
-                rat_tb = TailRatio(CL%Cl_biref(l0:CP%Max_l, 3), CL%Cl_scalar(l0:CP%Max_l, C_Cross))  ! claude
-                do l = CP%Max_l + 1, lmax  ! claude
-                    CBB(l) = CEE(l)*rat_bb  ! claude
-                    CEB(l) = CEE(l)*rat_eb  ! claude
-                    CTB(l) = CTE(l)*rat_tb  ! claude
-                end do  ! claude
-            end if  ! claude
-        end if  ! claude
+        if (present(CBB)) then ! modified: unlensed BB, EB, TB from the line-of-sight integral (Cl_biref)
+            ! modified: same weight and low-L taper as EE for the polarization spectra BB, EB; same weight as TE for TB
+            do l = lmin, CP%Max_l  ! modified
+                fac = LensingClWeight(l, flat_sky)  ! modified
+                CBB(l) = CL%Cl_biref(l, 1)*fac  ! modified
+                CEB(l) = CL%Cl_biref(l, 2)*fac  ! modified
+                if (ee_taper) then  ! modified
+                    CBB(l) = CBB(l)*LowLEELensingTaper(l)  ! modified
+                    CEB(l) = CEB(l)*LowLEELensingTaper(l)  ! modified
+                end if  ! modified
+                CTB(l) = CL%Cl_biref(l, 3)*fac  ! modified
+            end do  ! modified
+            if (lmax > CP%Max_l) then  ! modified
+                ! modified: no template exists above Max_l, so extend each spectrum with the shape of its parent
+                ! modified: (EE for BB and EB, TE for TB), scaled by its own least-squares ratio to that parent over
+                ! modified: the last 200 L below Max_l. Only the high-L tail is affected; tested by raising Max_l
+                l0 = max(lmin, CP%Max_l - 200)  ! modified
+                rat_bb = TailRatio(CL%Cl_biref(l0:CP%Max_l, 1), CL%Cl_scalar(l0:CP%Max_l, C_E))  ! modified
+                rat_eb = TailRatio(CL%Cl_biref(l0:CP%Max_l, 2), CL%Cl_scalar(l0:CP%Max_l, C_E))  ! modified
+                rat_tb = TailRatio(CL%Cl_biref(l0:CP%Max_l, 3), CL%Cl_scalar(l0:CP%Max_l, C_Cross))  ! modified
+                do l = CP%Max_l + 1, lmax  ! modified
+                    CBB(l) = CEE(l)*rat_bb  ! modified
+                    CEB(l) = CEE(l)*rat_eb  ! modified
+                    CTB(l) = CTE(l)*rat_tb  ! modified
+                end do  ! modified
+            end if  ! modified
+        end if  ! modified
         if (ALens_Fiducial > 0) then
             do l = 2, lmax
                 Cphil3(l) = LensingPhiWeight(l, flat_sky)*highL_CL_template(l, C_Phi)*ALens_Fiducial
@@ -375,25 +375,25 @@
 
     end subroutine PrepareLensedCLSpectra
 
-    pure function TailRatio(cl, parent) result(ratio) ! claude
-    ! claude: least-squares ratio cl/parent, used to extend the birefringence spectra above Max_l
-    real(dl), intent(in) :: cl(:), parent(:)  ! claude
-    real(dl) :: ratio, norm  ! claude
+    pure function TailRatio(cl, parent) result(ratio) ! modified
+    ! modified: least-squares ratio cl/parent, used to extend the birefringence spectra above Max_l
+    real(dl), intent(in) :: cl(:), parent(:)  ! modified
+    real(dl) :: ratio, norm  ! modified
 
-    norm = sum(parent**2)  ! claude
-    ratio = 0  ! claude
-    if (norm > 0) ratio = sum(cl*parent)/norm  ! claude
+    norm = sum(parent**2)  ! modified
+    ratio = 0  ! modified
+    if (norm > 0) ratio = sum(cl*parent)/norm  ! modified
 
-    end function TailRatio  ! claude
+    end function TailRatio  ! modified
 
-    logical function HasBirefringenceCls(State, CL) result(has) ! claude
-    ! claude: true when the unlensed spectra contain rotation-generated BB, EB, TB to be lensed
-    class(CAMBdata), intent(in) :: State  ! claude
-    type(TCLdata), intent(in) :: CL  ! claude
+    logical function HasBirefringenceCls(State, CL) result(has) ! modified
+    ! modified: true when the unlensed spectra contain rotation-generated BB, EB, TB to be lensed
+    class(CAMBdata), intent(in) :: State  ! modified
+    type(TCLdata), intent(in) :: CL  ! modified
 
-    has = HasBirefringence(State%CP) .and. allocated(CL%Cl_biref)  ! claude: constant angle or beta(z) table
+    has = HasBirefringence(State%CP) .and. allocated(CL%Cl_biref)  ! modified: constant angle or beta(z) table
 
-    end function HasBirefringenceCls  ! claude
+    end function HasBirefringenceCls  ! modified
 
     subroutine CorrFuncFullSkyApodized(State, CL, CLout, CPP, lmin, lmax)
     ! Accurate curved sky correlation function method
@@ -433,18 +433,18 @@
     real(dl) :: LensAccuracyBoost, ThetaSampleBoost, LensRangeBoost
     real(dl) high_l_lensed_lmax, high_l_ramp
     type(TTimer) :: Timer
-    ! claude: birefringence. CBB, CEB, CTB are the unlensed inputs; cb(1:2) are the extra BB terms in xi+ and xi-
-    ! claude: (Eqs. 30-31 of arXiv:2305.13976); cb(3) = EB with the xi- kernel (Eq. 36);
-    ! claude: cb(4) = TB with the xi_X kernel (Eq. 37)
-    real(dl), allocatable :: CBB(:), CEB(:), CTB(:)  ! claude
-    real(dl) cb(4), cbsum(2) ! claude
-    logical do_biref ! claude
+    ! modified: birefringence. CBB, CEB, CTB are the unlensed inputs; cb(1:2) are the extra BB terms in xi+ and xi-
+    ! modified: (Eqs. 30-31 of arXiv:2305.13976); cb(3) = EB with the xi- kernel (Eq. 36);
+    ! modified: cb(4) = TB with the xi_X kernel (Eq. 37)
+    real(dl), allocatable :: CBB(:), CEB(:), CTB(:)  ! modified
+    real(dl) cb(4), cbsum(2) ! modified
+    logical do_biref ! modified
 
     if (lensing_includes_tensors) call MpiStop('Haven''t implemented tensor lensing')
     allocate(roots(-1:lmax + 4), lfacs(lmax), lfacs2(lmax), lrootfacs(lmax), theta_cut(lmax))
     allocate(Cphil3(lmin:lmax), CTT(lmin:lmax), CTE(lmin:lmax), CEE(lmin:lmax), ls(lmax))
-    allocate(CBB(lmin:lmax), CEB(lmin:lmax), CTB(lmin:lmax), source=0._dl) ! claude
-    do_biref = HasBirefringenceCls(State, CL) ! claude
+    allocate(CBB(lmin:lmax), CEB(lmin:lmax), CTB(lmin:lmax), source=0._dl) ! modified
+    do_biref = HasBirefringenceCls(State, CL) ! modified
     associate(CP => State%CP)
 
         high_l_lensed_lmax = real(CP%Max_l - CP%lens_output_margin, dl)
@@ -504,20 +504,20 @@
 
         thread_ix = 1
         !$ thread_ix = OMP_GET_MAX_THREADS()
-        allocate(lens_contrib(6, CLout%lmax_lensed, thread_ix)) ! claude: 4 -> 6 for EB, TB
+        allocate(lens_contrib(6, CLout%lmax_lensed, thread_ix)) ! modified: 4 -> 6 for EB, TB
 
-        if (do_biref) then ! claude
-            call PrepareLensedCLSpectra(State, CL, lmin, lmax, .true., .false., CPP, Cphil3, CTT, CEE, CTE, &  ! claude
-                CBB, CEB, CTB)  ! claude
-        else  ! claude
-            call PrepareLensedCLSpectra(State, CL, lmin, lmax, .true., .false., CPP, Cphil3, CTT, CEE, CTE)  ! claude
-        end if  ! claude
+        if (do_biref) then ! modified
+            call PrepareLensedCLSpectra(State, CL, lmin, lmax, .true., .false., CPP, Cphil3, CTT, CEE, CTE, &  ! modified
+                CBB, CEB, CTB)  ! modified
+        else  ! modified
+            call PrepareLensedCLSpectra(State, CL, lmin, lmax, .true., .false., CPP, Cphil3, CTT, CEE, CTE)  ! modified
+        end if  ! modified
         if (global_error_flag /= 0) return
 
         lens_contrib = 0
 
         !$OMP PARALLEL DEFAULT(PRIVATE), &
-        !$OMP SHARED(CBB, CEB, CTB, do_biref), &  ! claude
+        !$OMP SHARED(CBB, CEB, CTB, do_biref), &  ! modified
         !$OMP SHARED(lfacs, lfacs2, lrootfacs, Cphil3, CTT, CTE, CEE, lens_contrib, theta_cut), &
         !$OMP SHARED(lmin, lmax, dtheta, CL, CLout, roots, npoints, interp_fac), &
         !$OMP SHARED(jmax, ls, short_integral_range, apodize_point_width)
@@ -582,7 +582,7 @@
             end do
 
             corr = 0._dl
-            cb = 0._dl ! claude
+            cb = 0._dl ! modified
             do j = 1, jmax
                 l = ls(j)
 
@@ -686,17 +686,17 @@
                 fac = 2*Cg2*X121*X132*d13 + fac2*d22 + Cg2sq*X242*X220*d04
 
                 corr(2) = corr(2) + sc*CEE(l)*fac
-                if (do_biref) cb(1) = cb(1) + sc*CBB(l)*fac ! claude: xi+ multiplies (EE + BB), Eq. 30
+                if (do_biref) cb(1) = cb(1) + sc*CBB(l)*fac ! modified: xi+ multiplies (EE + BB), Eq. 30
 
                 ! Q-U
                 fac = (fac3*P(l) + X242**2*d4m4)*Cg2sq/2 &
                     + Cg2*(X121**2*dm11 + X132**2*d3m3) + fac2*d2m2
 
                 corr(3) = corr(3) + sc*CEE(l)*fac
-                if (do_biref) then ! claude: xi- multiplies (EE - BB + 2i EB), Eqs. 31 and 36
-                    cb(2) = cb(2) - sc*CBB(l)*fac  ! claude
-                    cb(3) = cb(3) + sc*CEB(l)*fac  ! claude
-                end if  ! claude
+                if (do_biref) then ! modified: xi- multiplies (EE - BB + 2i EB), Eqs. 31 and 36
+                    cb(2) = cb(2) - sc*CBB(l)*fac  ! modified
+                    cb(3) = cb(3) + sc*CEB(l)*fac  ! modified
+                end if  ! modified
 
                 ! TE
                 fac = (X000*X022 - 1)*d20 + &
@@ -704,7 +704,7 @@
                     + Cg2sq*(X220/2*d2m4*X242 + (fac3/2 + dX022*dX000)*d20)
 
                 corr(4) = corr(4) + sc*CTE(l)*fac
-                if (do_biref) cb(4) = cb(4) + sc*CTB(l)*fac ! claude: xi_X multiplies (TE + i TB), Eqs. 32 and 37
+                if (do_biref) cb(4) = cb(4) + sc*CTB(l)*fac ! modified: xi_X multiplies (TE + i TB), Eqs. 32 and 37
 
             end do
 
@@ -714,7 +714,7 @@
                 taper = max(0._dl, min(1._dl, taper))
                 taper = taper**3*(10._dl + taper*(-15._dl + 6._dl*taper))
                 corr = corr*taper
-                cb = cb*taper ! claude
+                cb = cb*taper ! modified
             end if
 
             do l = lmin, CLout%lmax_lensed
@@ -723,15 +723,15 @@
                 lens_contrib(C_Temp, l, thread_ix) = lens_contrib(C_Temp, l, thread_ix) + &
                     corr(1)*P(l)*sinth
 
-                if (do_biref) then ! claude: include the unlensed BB in xi+ and xi-; EB and TB as for EE-BB and TE
-                    T2 = (corr(2) + cb(1))*d_22(l)  ! claude
-                    T4 = (corr(3) + cb(2))*d_2m2(l)  ! claude
-                    lens_contrib(5, l, thread_ix) = lens_contrib(5, l, thread_ix) + cb(3)*d_2m2(l)*sinth  ! claude
-                    lens_contrib(6, l, thread_ix) = lens_contrib(6, l, thread_ix) + cb(4)*d_20(l)*sinth  ! claude
-                else  ! claude
-                    T2 = corr(2)*d_22(l)  ! claude
-                    T4 = corr(3)*d_2m2(l)  ! claude
-                end if  ! claude
+                if (do_biref) then ! modified: include the unlensed BB in xi+ and xi-; EB and TB as for EE-BB and TE
+                    T2 = (corr(2) + cb(1))*d_22(l)  ! modified
+                    T4 = (corr(3) + cb(2))*d_2m2(l)  ! modified
+                    lens_contrib(5, l, thread_ix) = lens_contrib(5, l, thread_ix) + cb(3)*d_2m2(l)*sinth  ! modified
+                    lens_contrib(6, l, thread_ix) = lens_contrib(6, l, thread_ix) + cb(4)*d_20(l)*sinth  ! modified
+                else  ! modified
+                    T2 = corr(2)*d_22(l)  ! modified
+                    T4 = corr(3)*d_2m2(l)  ! modified
+                end if  ! modified
 
                 lens_contrib(CT_E, l, thread_ix) = lens_contrib(CT_E, l, thread_ix) + &
                     (T2 + T4)*halfsinth
@@ -749,10 +749,10 @@
 
         do l = lmin, CLout%lmax_lensed
             corr = 0._dl
-            cbsum = 0._dl ! claude
+            cbsum = 0._dl ! modified
             do thread_ix = 1, size(lens_contrib, 3)
-                corr = corr + lens_contrib(1:4, l, thread_ix) ! claude: 1:4 as lens_contrib now has 6 rows
-                cbsum = cbsum + lens_contrib(5:6, l, thread_ix) ! claude
+                corr = corr + lens_contrib(1:4, l, thread_ix) ! modified: 1:4 as lens_contrib now has 6 rows
+                cbsum = cbsum + lens_contrib(5:6, l, thread_ix) ! modified
             end do
             ! sign from d(cos theta) = -sin theta dtheta
             fac = l*(l + 1)/OutputDenominator*dtheta*const_twopi
@@ -760,11 +760,11 @@
             CLout%Cl_lensed(l, CT_E) = corr(CT_E)*fac + CL%Cl_scalar(l, C_E)
             CLout%Cl_lensed(l, CT_B) = corr(CT_B)*fac
             CLout%Cl_lensed(l, CT_Cross) = corr(CT_Cross)*fac + CL%Cl_scalar(l, C_Cross)
-            if (do_biref) then ! claude: lensed = unlensed + lensing change, as for EE and TE above
-                CLout%Cl_lensed(l, CT_B) = CLout%Cl_lensed(l, CT_B) + CL%Cl_biref(l, 1)  ! claude
-                CLout%Cl_lensed_biref(l, 1) = cbsum(1)*fac + CL%Cl_biref(l, 2)  ! claude
-                CLout%Cl_lensed_biref(l, 2) = cbsum(2)*fac + CL%Cl_biref(l, 3)  ! claude
-            end if  ! claude
+            if (do_biref) then ! modified: lensed = unlensed + lensing change, as for EE and TE above
+                CLout%Cl_lensed(l, CT_B) = CLout%Cl_lensed(l, CT_B) + CL%Cl_biref(l, 1)  ! modified
+                CLout%Cl_lensed_biref(l, 1) = cbsum(1)*fac + CL%Cl_biref(l, 2)  ! modified
+                CLout%Cl_lensed_biref(l, 2) = cbsum(2)*fac + CL%Cl_biref(l, 3)  ! modified
+            end if  ! modified
 
         end do
 
@@ -801,14 +801,14 @@
     real(dl) :: corr(4), wcorr1, wcorr2, wcorr3, wcorr4, T2, T4
     real(dl), allocatable :: lens_contrib(:, :, :)
     type(TTimer) :: Timer
-    ! claude: birefringence; k2, k3, k4 are the xi+, xi-, xi_X kernels at one L (the factors multiplying CEE, CEE,
-    ! claude: CTE above); cb as in CorrFuncFullSkyApodized
-    real(dl), allocatable :: CBB(:), CEB(:), CTB(:)  ! claude
-    real(dl) :: cb(4), cbsum(2), k2, k3, k4  ! claude
-    logical :: do_biref  ! claude
+    ! modified: birefringence; k2, k3, k4 are the xi+, xi-, xi_X kernels at one L (the factors multiplying CEE, CEE,
+    ! modified: CTE above); cb as in CorrFuncFullSkyApodized
+    real(dl), allocatable :: CBB(:), CEB(:), CTB(:)  ! modified
+    real(dl) :: cb(4), cbsum(2), k2, k3, k4  ! modified
+    logical :: do_biref  ! modified
 
     if (lensing_includes_tensors) call MpiStop('Haven''t implemented tensor lensing')
-    do_biref = HasBirefringenceCls(State, CL) ! claude
+    do_biref = HasBirefringenceCls(State, CL) ! modified
     allocate(lfacs(lmax), lfacs2(lmax), invlfacs(lmax), invlfacs2(lmax), invlrootfacs(lmax))
     allocate(rootfac1(lmax), invrootfac1(lmax), rootfac2(lmax), invrootfac2(lmax))
     allocate(invrootfac3(lmax), rootrat(lmax), invlfacsm12(lmax), theta_cut(lmax))
@@ -867,24 +867,24 @@
         ! low-L lensed BB contribution is otherwise window-sensitive (does not converge
         ! with the integration range for high tau). The full-range AccurateBB=T mode
         ! keeps it. Matches python lensed_cls with low_l_ee_taper=True.
-        allocate(CBB(lmin:lmax), CEB(lmin:lmax), CTB(lmin:lmax), source=0._dl) ! claude
-        if (do_biref) then ! claude
-            call PrepareLensedCLSpectra(State, CL, lmin, lmax, .not. CP%Accuracy%AccurateBB, .false., &  ! claude
-                CPP, Cphil3, CTT, CEE, CTE, CBB, CEB, CTB)  ! claude
-        else  ! claude
-            call PrepareLensedCLSpectra(State, CL, lmin, lmax, .not. CP%Accuracy%AccurateBB, .false., &  ! claude
-                CPP, Cphil3, CTT, CEE, CTE)  ! claude
-        end if  ! claude
+        allocate(CBB(lmin:lmax), CEB(lmin:lmax), CTB(lmin:lmax), source=0._dl) ! modified
+        if (do_biref) then ! modified
+            call PrepareLensedCLSpectra(State, CL, lmin, lmax, .not. CP%Accuracy%AccurateBB, .false., &  ! modified
+                CPP, Cphil3, CTT, CEE, CTE, CBB, CEB, CTB)  ! modified
+        else  ! modified
+            call PrepareLensedCLSpectra(State, CL, lmin, lmax, .not. CP%Accuracy%AccurateBB, .false., &  ! modified
+                CPP, Cphil3, CTT, CEE, CTE)  ! modified
+        end if  ! modified
         if (global_error_flag /= 0) return
 
         thread_ix = 1
         !$ thread_ix = OMP_GET_MAX_THREADS()
-        allocate(lens_contrib(6, CLout%lmax_lensed, thread_ix), source=0._dl) ! claude: 4 -> 6 for EB, TB
+        allocate(lens_contrib(6, CLout%lmax_lensed, thread_ix), source=0._dl) ! modified: 4 -> 6 for EB, TB
 
         if (DebugMsgs) call Timer%Start()
 
         !$OMP PARALLEL DEFAULT(PRIVATE), &
-        !$OMP SHARED(CBB, CEB, CTB, do_biref), &  ! claude
+        !$OMP SHARED(CBB, CEB, CTB, do_biref), &  ! modified
         !$OMP SHARED(lmin, lmax, imin, npoints, xvals, weights, lens_contrib, CLout), &
         !$OMP SHARED(Cphil3, CTT, CEE, CTE, lfacs, lfacs2, invlfacs, invlfacs2, invlrootfacs), &
         !$OMP SHARED(rootfac1, invrootfac1, rootfac2, invrootfac2, invrootfac3, rootrat, invlfacsm12), &
@@ -956,7 +956,7 @@
             ! recurrence: one exp per point rather than per l, with relative error
             ! growing only like l*epsilon (and harmless gradual underflow to zero).
             corr = 0._dl
-            cb = 0._dl ! claude
+            cb = 0._dl ! modified
             expsig = exp(-sigma2)
             expl = expsig ! exp(-l*sigma2)
             facexp = expsig ! exp(-lfacs(l)*sigma2/2), starting at l=1
@@ -978,12 +978,12 @@
                     fEE*(c2fac*dm11(l)/2._dl + c2fac2*(2._dl*d2m2(l) + P(l))/8._dl)
                 corr(4) = corr(4) + CTE(l)*(facexp - 1._dl)*d20(l) + &
                     fTE*(c2fac*d11(l)/2._dl + 3._dl*c2fac2*d20(l)/8._dl)
-                if (do_biref) then ! claude: the same three kernels, without the spectrum factor
-                    k2 = (facexp - 1._dl)*d22(l) + facexp*c2fac2*d22(l)/4._dl  ! claude
-                    ! claude: next line
+                if (do_biref) then ! modified: the same three kernels, without the spectrum factor
+                    k2 = (facexp - 1._dl)*d22(l) + facexp*c2fac2*d22(l)/4._dl  ! modified
+                    ! modified: next line
                     k3 = (facexp - 1._dl)*d2m2(l) + facexp*(c2fac*dm11(l)/2._dl + c2fac2*(2._dl*d2m2(l) + P(l))/8._dl)
-                    k4 = (facexp - 1._dl)*d20(l) + facexp*(c2fac*d11(l)/2._dl + 3._dl*c2fac2*d20(l)/8._dl)  ! claude
-                end if  ! claude
+                    k4 = (facexp - 1._dl)*d20(l) + facexp*(c2fac*d11(l)/2._dl + 3._dl*c2fac2*d20(l)/8._dl)  ! modified
+                end if  ! modified
                 if (l >= 3) then
                     ! Higher d's are only needed pointwise, computed here from the stored arrays
                     d1m2 = sinth*invrootfac1(l)*(dP(l) - tfac1*dm11(l))
@@ -995,11 +995,11 @@
                     corr(2) = corr(2) + fEE*c2fac*d13
                     corr(3) = corr(3) + fEE*c2fac*d3m3/2._dl
                     corr(4) = corr(4) + fTE*c2fac*d1m3/2._dl
-                    if (do_biref) then ! claude
-                        k2 = k2 + facexp*c2fac*d13  ! claude
-                        k3 = k3 + facexp*c2fac*d3m3/2._dl  ! claude
-                        k4 = k4 + facexp*c2fac*d1m3/2._dl  ! claude
-                    end if  ! claude
+                    if (do_biref) then ! modified
+                        k2 = k2 + facexp*c2fac*d13  ! modified
+                        k3 = k3 + facexp*c2fac*d3m3/2._dl  ! modified
+                        k4 = k4 + facexp*c2fac*d1m3/2._dl  ! modified
+                    end if  ! modified
                     if (l >= 4) then
                         d04 = ((-lfacs(l) + (18._dl*x**2 + 6._dl)*rsin2)*d20(l) - &
                             6._dl*x*lfacs2(l)*dP(l)*invlrootfacs(l))*(invrootfac2(l)*invrootfac3(l))
@@ -1009,29 +1009,29 @@
                         corr(2) = corr(2) + fEE*c2fac2*d04/4._dl
                         corr(3) = corr(3) + fEE*c2fac2*d4m4/8._dl
                         corr(4) = corr(4) + fTE*c2fac2*d2m4/8._dl
-                        if (do_biref) then ! claude
-                            k2 = k2 + facexp*c2fac2*d04/4._dl  ! claude
-                            k3 = k3 + facexp*c2fac2*d4m4/8._dl  ! claude
-                            k4 = k4 + facexp*c2fac2*d2m4/8._dl  ! claude
-                        end if  ! claude
+                        if (do_biref) then ! modified
+                            k2 = k2 + facexp*c2fac2*d04/4._dl  ! modified
+                            k3 = k3 + facexp*c2fac2*d4m4/8._dl  ! modified
+                            k4 = k4 + facexp*c2fac2*d2m4/8._dl  ! modified
+                        end if  ! modified
                     end if
                 end if
-                if (do_biref) then ! claude: Eqs. 30-32 and 36-37 of arXiv:2305.13976
-                    cb(1) = cb(1) + CBB(l)*k2 ! xi+ multiplies (EE + BB)  ! claude
-                    cb(2) = cb(2) - CBB(l)*k3 ! xi- multiplies (EE - BB + 2i EB)  ! claude
-                    cb(3) = cb(3) + CEB(l)*k3  ! claude
-                    cb(4) = cb(4) + CTB(l)*k4 ! xi_X multiplies (TE + i TB)  ! claude
-                end if  ! claude
+                if (do_biref) then ! modified: Eqs. 30-32 and 36-37 of arXiv:2305.13976
+                    cb(1) = cb(1) + CBB(l)*k2 ! xi+ multiplies (EE + BB)  ! modified
+                    cb(2) = cb(2) - CBB(l)*k3 ! xi- multiplies (EE - BB + 2i EB)  ! modified
+                    cb(3) = cb(3) + CEB(l)*k3  ! modified
+                    cb(4) = cb(4) + CTB(l)*k4 ! xi_X multiplies (TE + i TB)  ! modified
+                end if  ! modified
             end do
 
             wcorr1 = weight*corr(1)
             wcorr2 = weight*corr(2)/2._dl
             wcorr3 = weight*corr(3)/2._dl
             wcorr4 = weight*corr(4)
-            if (do_biref) then ! claude
-                wcorr2 = weight*(corr(2) + cb(1))/2._dl  ! claude
-                wcorr3 = weight*(corr(3) + cb(2))/2._dl  ! claude
-            end if  ! claude
+            if (do_biref) then ! modified
+                wcorr2 = weight*(corr(2) + cb(1))/2._dl  ! modified
+                wcorr3 = weight*(corr(3) + cb(2))/2._dl  ! modified
+            end if  ! modified
             if (lmin <= 1 .and. CLout%lmax_lensed >= 1) then
                 lens_contrib(CT_Temp, 1, thread_ix) = lens_contrib(CT_Temp, 1, thread_ix) + wcorr1*P(1)
             end if
@@ -1042,10 +1042,10 @@
                 lens_contrib(CT_E, l, thread_ix) = lens_contrib(CT_E, l, thread_ix) + T2 + T4
                 lens_contrib(CT_B, l, thread_ix) = lens_contrib(CT_B, l, thread_ix) + T2 - T4
                 lens_contrib(CT_Cross, l, thread_ix) = lens_contrib(CT_Cross, l, thread_ix) + wcorr4*d20(l)
-                if (do_biref) then ! claude: Delta(EB) like Delta(EE-BB) = 2*T4, Delta(TB) like Delta(TE)
-                    lens_contrib(5, l, thread_ix) = lens_contrib(5, l, thread_ix) + weight*cb(3)*d2m2(l)  ! claude
-                    lens_contrib(6, l, thread_ix) = lens_contrib(6, l, thread_ix) + weight*cb(4)*d20(l)  ! claude
-                end if  ! claude
+                if (do_biref) then ! modified: Delta(EB) like Delta(EE-BB) = 2*T4, Delta(TB) like Delta(TE)
+                    lens_contrib(5, l, thread_ix) = lens_contrib(5, l, thread_ix) + weight*cb(3)*d2m2(l)  ! modified
+                    lens_contrib(6, l, thread_ix) = lens_contrib(6, l, thread_ix) + weight*cb(4)*d20(l)  ! modified
+                end if  ! modified
             end do
 
         end do
@@ -1055,7 +1055,7 @@
         if (lmin <= 1 .and. CLout%lmax_lensed >= 1) then
             contrib_sum = 0._dl
             do thread_ix = 1, size(lens_contrib, 3)
-                contrib_sum = contrib_sum + lens_contrib(1:4, 1, thread_ix) ! claude: 1:4 as lens_contrib has 6 rows
+                contrib_sum = contrib_sum + lens_contrib(1:4, 1, thread_ix) ! modified: 1:4 as lens_contrib has 6 rows
             end do
             CLout%Cl_lensed(1, CT_Temp) = contrib_sum(CT_Temp)*2._dl*const_twopi/OutputDenominator &
                 + CL%Cl_scalar(1, C_Temp)
@@ -1065,21 +1065,21 @@
         end if
         do l = max(2, lmin), CLout%lmax_lensed
             contrib_sum = 0._dl
-            cbsum = 0._dl ! claude
+            cbsum = 0._dl ! modified
             do thread_ix = 1, size(lens_contrib, 3)
-                contrib_sum = contrib_sum + lens_contrib(1:4, l, thread_ix) ! claude: 1:4 as lens_contrib has 6 rows
-                cbsum = cbsum + lens_contrib(5:6, l, thread_ix) ! claude
+                contrib_sum = contrib_sum + lens_contrib(1:4, l, thread_ix) ! modified: 1:4 as lens_contrib has 6 rows
+                cbsum = cbsum + lens_contrib(5:6, l, thread_ix) ! modified
             end do
             fac = lfacs(l)*const_twopi/OutputDenominator
             CLout%Cl_lensed(l, CT_Temp) = contrib_sum(CT_Temp)*fac + CL%Cl_scalar(l, C_Temp)
             CLout%Cl_lensed(l, CT_E) = contrib_sum(CT_E)*fac + CL%Cl_scalar(l, C_E)
             CLout%Cl_lensed(l, CT_B) = contrib_sum(CT_B)*fac
             CLout%Cl_lensed(l, CT_Cross) = contrib_sum(CT_Cross)*fac + CL%Cl_scalar(l, C_Cross)
-            if (do_biref) then ! claude: lensed = unlensed + lensing change, as for EE and TE above
-                CLout%Cl_lensed(l, CT_B) = CLout%Cl_lensed(l, CT_B) + CL%Cl_biref(l, 1)  ! claude
-                CLout%Cl_lensed_biref(l, 1) = cbsum(1)*fac + CL%Cl_biref(l, 2)  ! claude
-                CLout%Cl_lensed_biref(l, 2) = cbsum(2)*fac + CL%Cl_biref(l, 3)  ! claude
-            end if  ! claude
+            if (do_biref) then ! modified: lensed = unlensed + lensing change, as for EE and TE above
+                CLout%Cl_lensed(l, CT_B) = CLout%Cl_lensed(l, CT_B) + CL%Cl_biref(l, 1)  ! modified
+                CLout%Cl_lensed_biref(l, 1) = cbsum(1)*fac + CL%Cl_biref(l, 2)  ! modified
+                CLout%Cl_lensed_biref(l, 2) = cbsum(2)*fac + CL%Cl_biref(l, 3)  ! modified
+            end if  ! modified
         end do
 
         if (DebugMsgs) call Timer%WriteTime('Time for full corr lensing')

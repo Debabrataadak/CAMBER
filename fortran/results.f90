@@ -131,8 +131,8 @@
 
         type(TRanges) :: q
         real(dl), dimension(:, :, :), allocatable :: Delta_p_l_k
-        ! claude: rotated B-mode transfer Delta_B(l_index, q_index) = int (E source) sin 2beta j_l, birefringence only
-        real(dl), dimension(:, :), allocatable :: Delta_B_l_k  ! claude
+        ! modified: rotated B-mode transfer Delta_B(l_index, q_index) = int (E source) sin 2beta j_l, birefringence only
+        real(dl), dimension(:, :), allocatable :: Delta_B_l_k  ! modified
 
         ! The L index of the lowest L to use for Limber
         integer, dimension(:), allocatable :: Limber_l_min
@@ -161,10 +161,10 @@
         real(dl), dimension(:, :), allocatable :: Cl_lensed
         ! Cl_lensed(l, Cl_type) are the interpolated Cls
 
-        ! claude: unlensed scalar BB, EB, TB from birefringence, Cl_biref(l, 1:3); zero unless birefringence_angle /= 0
-        real(dl), dimension(:, :), allocatable :: Cl_biref  ! claude
-        ! claude: lensed EB, TB, Cl_lensed_biref(l, 1:2), Eqs. 36-37 of arXiv:2305.13976 (lensed BB is in Cl_lensed)
-        real(dl), dimension(:, :), allocatable :: Cl_lensed_biref  ! claude
+        ! modified: unlensed scalar BB, EB, TB from birefringence, Cl_biref(l, 1:3); zero unless birefringence_angle /= 0
+        real(dl), dimension(:, :), allocatable :: Cl_biref  ! modified
+        ! modified: lensed EB, TB, Cl_lensed_biref(l, 1:2), Eqs. 36-37 of arXiv:2305.13976 (lensed BB is in Cl_lensed)
+        real(dl), dimension(:, :), allocatable :: Cl_lensed_biref  ! modified
     contains
     procedure :: InitCls => TCLdata_InitCls
     procedure :: output_cl_files => TCLdata_output_cl_files
@@ -3184,7 +3184,7 @@
     type(ClTransferData) :: CTrans
 
     if (allocated(CTrans%Delta_p_l_k)) deallocate(CTrans%Delta_p_l_k)
-    if (allocated(CTrans%Delta_B_l_k)) deallocate(CTrans%Delta_B_l_k) ! claude
+    if (allocated(CTrans%Delta_B_l_k)) deallocate(CTrans%Delta_B_l_k) ! modified
     if (allocated(CTrans%ls%l)) deallocate(CTrans%ls%l)
     call CTrans%q%Free()
     call Free_Limber(CTrans)
@@ -3229,8 +3229,8 @@
         if (CP%WantScalars) then
             if (allocated(this%Cl_scalar)) deallocate(this%Cl_scalar)
             allocate(this%Cl_scalar(CP%Min_l:CP%Max_l, C_Temp:State%Scalar_C_last), source=0._dl)
-            if (allocated(this%Cl_biref)) deallocate(this%Cl_biref) ! claude
-            allocate(this%Cl_biref(CP%Min_l:CP%Max_l, 3), source=0._dl) ! claude: BB, EB, TB
+            if (allocated(this%Cl_biref)) deallocate(this%Cl_biref) ! modified
+            allocate(this%Cl_biref(CP%Min_l:CP%Max_l, 3), source=0._dl) ! modified: BB, EB, TB
             if (CP%Want_cl_2D_Array) then
                 if (allocated(this%Cl_Scalar_Array)) deallocate(this%Cl_Scalar_Array)
                 allocate(this%Cl_Scalar_Array(CP%Min_l:CP%Max_l, &

@@ -727,7 +727,7 @@
     end if
 
     call Ini%Read('Alens', P%Alens)
-    call Ini%Read('birefringence_angle', P%birefringence_angle) ! claude: degrees
+    call Ini%Read('birefringence_angle', P%birefringence_angle) ! modified: degrees
 
     call P%Reion%ReadParams(Ini)
     call P%InitPower%ReadParams(Ini)

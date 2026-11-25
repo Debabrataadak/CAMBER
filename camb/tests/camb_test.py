@@ -196,7 +196,7 @@ class CambTest(unittest.TestCase):
                 "max_zrei",
                 "wde_a_array",
                 "wde_w_array",
-                "birefringence_angle",  # claude
+                "birefringence_angle",  # modified
             },
         )
         params2 = camb.get_valid_numerical_params(dark_energy_model="AxionEffectiveFluid")

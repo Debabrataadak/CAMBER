@@ -616,20 +616,20 @@
 
     end subroutine CAMB_SetUnlensedScalCls
 
-    subroutine CAMB_SetBirefringenceCls(Data, lmax, biref_Cls) ! claude
-    ! claude: unlensed scalar BB, EB, TB from the birefringence line-of-sight integral (zero if beta = 0)
-    type(CAMBdata) :: Data  ! claude
-    integer, intent(in) :: lmax  ! claude
-    real(dl), intent(out) :: biref_Cls(3, 0:lmax)  ! claude
-    integer lmx ! claude
+    subroutine CAMB_SetBirefringenceCls(Data, lmax, biref_Cls) ! modified
+    ! modified: unlensed scalar BB, EB, TB from the birefringence line-of-sight integral (zero if beta = 0)
+    type(CAMBdata) :: Data  ! modified
+    integer, intent(in) :: lmax  ! modified
+    real(dl), intent(out) :: biref_Cls(3, 0:lmax)  ! modified
+    integer lmx ! modified
 
-    biref_Cls = 0  ! claude
-    if (Data%CP%WantScalars .and. allocated(Data%CLdata%Cl_biref)) then  ! claude
-        lmx = min(Data%CP%Max_l, lmax)  ! claude
-        biref_Cls(1:3, Data%CP%Min_l:lmx) = transpose(Data%CLdata%Cl_biref(Data%CP%Min_l:lmx, 1:3))  ! claude
-    end if  ! claude
+    biref_Cls = 0  ! modified
+    if (Data%CP%WantScalars .and. allocated(Data%CLdata%Cl_biref)) then  ! modified
+        lmx = min(Data%CP%Max_l, lmax)  ! modified
+        biref_Cls(1:3, Data%CP%Min_l:lmx) = transpose(Data%CLdata%Cl_biref(Data%CP%Min_l:lmx, 1:3))  ! modified
+    end if  ! modified
 
-    end subroutine CAMB_SetBirefringenceCls  ! claude
+    end subroutine CAMB_SetBirefringenceCls  ! modified
 
     subroutine CAMB_SetlensedScalCls(Data, lmax, lensed_Cls)
     type(CAMBdata) Data
@@ -646,21 +646,21 @@
 
     end subroutine CAMB_SetlensedScalCls
 
-    subroutine CAMB_SetLensedBirefringenceCls(Data, lmax, lensed_biref_Cls) ! claude
-    ! claude: lensed EB, TB from the lensing of the unlensed EB, TB (Eqs. 36-37 of arXiv:2305.13976)
-    type(CAMBdata) :: Data  ! claude
-    integer, intent(in) :: lmax  ! claude
-    real(dl), intent(out) :: lensed_biref_Cls(2, 0:lmax)  ! claude
-    integer lmx ! claude
+    subroutine CAMB_SetLensedBirefringenceCls(Data, lmax, lensed_biref_Cls) ! modified
+    ! modified: lensed EB, TB from the lensing of the unlensed EB, TB (Eqs. 36-37 of arXiv:2305.13976)
+    type(CAMBdata) :: Data  ! modified
+    integer, intent(in) :: lmax  ! modified
+    real(dl), intent(out) :: lensed_biref_Cls(2, 0:lmax)  ! modified
+    integer lmx ! modified
 
-    lensed_biref_Cls = 0  ! claude
-    if (Data%CP%WantScalars .and. Data%CP%DoLensing .and. allocated(Data%CLdata%Cl_lensed_biref)) then  ! claude
-        lmx = min(lmax, Data%CLdata%lmax_lensed)  ! claude
-        ! claude: next line
+    lensed_biref_Cls = 0  ! modified
+    if (Data%CP%WantScalars .and. Data%CP%DoLensing .and. allocated(Data%CLdata%Cl_lensed_biref)) then  ! modified
+        lmx = min(lmax, Data%CLdata%lmax_lensed)  ! modified
+        ! modified: next line
         lensed_biref_Cls(1:2, Data%CP%Min_l:lmx) = transpose(Data%CLdata%Cl_lensed_biref(Data%CP%Min_l:lmx, 1:2))
-    end if  ! claude
+    end if  ! modified
 
-    end subroutine CAMB_SetLensedBirefringenceCls  ! claude
+    end subroutine CAMB_SetLensedBirefringenceCls  ! modified
 
     subroutine CAMB_SetTensorCls(Data, lmax, tensor_Cls)
     type(CAMBdata) :: Data

@@ -1286,7 +1286,7 @@ class CAMBdata(F2003Class):
         self._scale_cls(res, CMB_unit, raw_cl)
         return res
 
-    def get_birefringence_cls(self, lmax=None, CMB_unit=None, raw_cl=False, lensed=False):  # claude
+    def get_birefringence_cls(self, lmax=None, CMB_unit=None, raw_cl=False, lensed=False):  # modified
         r"""
         Get scalar CMB power spectra including isotropic cosmic birefringence by the angle
         :attr:`~.model.CAMBparams.birefringence_angle` (degrees). Must have already calculated power spectra.
@@ -1303,24 +1303,24 @@ class CAMBdata(F2003Class):
         :param lensed: return lensed rather than unlensed spectra
         :return: numpy array CL[0:lmax+1,0:6], where 0..5 indexes TT, EE, BB, TE, EB, TB
         """
-        if lensed:  # claude
-            cls = self.get_lensed_scalar_cls(lmax, CMB_unit, raw_cl)  # claude: TT, EE, BB, TE, lensed in Fortran
-            biref = np.empty((cls.shape[0], 2))  # claude
-            CAMB_SetLensedBirefringenceCls(byref(self), byref(c_int(cls.shape[0] - 1)), biref)  # claude
-            self._scale_cls(biref, CMB_unit, raw_cl)  # claude
-            res = np.empty((cls.shape[0], 6))  # claude
-            res[:, :4] = cls  # claude
-            res[:, 4:] = biref  # claude: lensed EB, TB
-            return res  # claude
-        cls = self.get_unlensed_scalar_cls(lmax, CMB_unit, raw_cl)  # claude
-        biref = np.empty((cls.shape[0], 3))  # claude
-        CAMB_SetBirefringenceCls(byref(self), byref(c_int(cls.shape[0] - 1)), biref)  # claude
-        self._scale_cls(biref, CMB_unit, raw_cl)  # claude
-        res = np.empty((cls.shape[0], 6))  # claude
-        res[:, :4] = cls  # claude
-        res[:, 2] = biref[:, 0]  # claude
-        res[:, 4:] = biref[:, 1:]  # claude
-        return res  # claude
+        if lensed:  # modified
+            cls = self.get_lensed_scalar_cls(lmax, CMB_unit, raw_cl)  # modified: TT, EE, BB, TE, lensed in Fortran
+            biref = np.empty((cls.shape[0], 2))  # modified
+            CAMB_SetLensedBirefringenceCls(byref(self), byref(c_int(cls.shape[0] - 1)), biref)  # modified
+            self._scale_cls(biref, CMB_unit, raw_cl)  # modified
+            res = np.empty((cls.shape[0], 6))  # modified
+            res[:, :4] = cls  # modified
+            res[:, 4:] = biref  # modified: lensed EB, TB
+            return res  # modified
+        cls = self.get_unlensed_scalar_cls(lmax, CMB_unit, raw_cl)  # modified
+        biref = np.empty((cls.shape[0], 3))  # modified
+        CAMB_SetBirefringenceCls(byref(self), byref(c_int(cls.shape[0] - 1)), biref)  # modified
+        self._scale_cls(biref, CMB_unit, raw_cl)  # modified
+        res = np.empty((cls.shape[0], 6))  # modified
+        res[:, :4] = cls  # modified
+        res[:, 2] = biref[:, 0]  # modified
+        res[:, 4:] = biref[:, 1:]  # modified
+        return res  # modified
 
     def get_lens_potential_cls(self, lmax=None, CMB_unit=None, raw_cl=False):
         r"""
@@ -1952,12 +1952,12 @@ CAMB_SetLensPotentialCls = camblib.__handles_MOD_camb_setlenspotentialcls
 CAMB_SetUnlensedScalCls = camblib.__handles_MOD_camb_setunlensedscalcls
 CAMB_SetLensedScalCls = camblib.__handles_MOD_camb_setlensedscalcls
 CAMB_SetTensorCls = camblib.__handles_MOD_camb_settensorcls
-CAMB_SetBirefringenceCls = camblib.__handles_MOD_camb_setbirefringencecls  # claude
+CAMB_SetBirefringenceCls = camblib.__handles_MOD_camb_setbirefringencecls  # modified
 
 _set_cl_args = [POINTER(CAMBdata), int_arg, numpy_1d]
-CAMB_SetBirefringenceCls.argtypes = _set_cl_args  # claude
-CAMB_SetLensedBirefringenceCls = camblib.__handles_MOD_camb_setlensedbirefringencecls  # claude
-CAMB_SetLensedBirefringenceCls.argtypes = _set_cl_args  # claude
+CAMB_SetBirefringenceCls.argtypes = _set_cl_args  # modified
+CAMB_SetLensedBirefringenceCls = camblib.__handles_MOD_camb_setlensedbirefringencecls  # modified
+CAMB_SetLensedBirefringenceCls.argtypes = _set_cl_args  # modified
 
 CAMB_SetTotCls.argtypes = _set_cl_args
 CAMB_SetUnlensedCls.argtypes = _set_cl_args

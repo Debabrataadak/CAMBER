@@ -418,14 +418,14 @@ class CAMBparams(F2003Class):
         ("min_l_logl_sampling", c_int, "Minimum L to use log sampling for L"),
         ("SourceWindows", AllocatableObjectArray(SourceWindow)),
         ("CustomSources", CustomSources),
-        (  # claude: must stay last, matching the Fortran CAMBparams order
-            "birefringence_angle",  # claude
-            c_double,  # claude
-            # claude: next line
+        (  # modified: must stay last, matching the Fortran CAMBparams order
+            "birefringence_angle",  # modified
+            c_double,  # modified
+            # modified: next line
             "Isotropic birefringence angle beta in degrees (flat, scalars); see CAMBdata.get_birefringence_cls",
-        ),  # claude
-        ("birefringence_z", AllocatableArrayDouble, "redshifts (increasing) of a beta(z) table"),  # claude
-        ("birefringence_beta", AllocatableArrayDouble, "beta(z) in degrees; overrides birefringence_angle"),  # claude
+        ),  # modified
+        ("birefringence_z", AllocatableArrayDouble, "redshifts (increasing) of a beta(z) table"),  # modified
+        ("birefringence_beta", AllocatableArrayDouble, "beta(z) in degrees; overrides birefringence_angle"),  # modified
     )
 
     H0: float
@@ -1027,7 +1027,7 @@ class CAMBparams(F2003Class):
             else:
                 self.NonLinear = NonLinear_none
 
-    def set_birefringence_table(self, z=None, beta=None):  # claude
+    def set_birefringence_table(self, z=None, beta=None):  # modified
         r"""
         Set a time-varying cosmic birefringence angle :math:`\beta(z)`: the rotation, in degrees, of the polarization
         of a photon emitted at redshift z. It is interpolated with a cubic spline in z at each line-of-sight time step
@@ -1039,19 +1039,19 @@ class CAMBparams(F2003Class):
         :param beta: rotation angle in degrees at each redshift
         :return: self
         """
-        if z is None:  # claude
-            self.birefringence_z = []  # claude
-            self.birefringence_beta = []  # claude
-            return self  # claude
-        z = np.asarray(z, dtype=np.float64)  # claude
-        beta = np.asarray(beta, dtype=np.float64)  # claude
-        if z.ndim != 1 or z.shape != beta.shape or z.size < 2:  # claude
-            raise CAMBValueError("z and beta must be 1D arrays of the same length (at least 2 points)")  # claude
-        if np.any(np.diff(z) <= 0):  # claude
-            raise CAMBValueError("birefringence table redshifts must be strictly increasing")  # claude
-        self.birefringence_z = z  # claude
-        self.birefringence_beta = beta  # claude
-        return self  # claude
+        if z is None:  # modified
+            self.birefringence_z = []  # modified
+            self.birefringence_beta = []  # modified
+            return self  # modified
+        z = np.asarray(z, dtype=np.float64)  # modified
+        beta = np.asarray(beta, dtype=np.float64)  # modified
+        if z.ndim != 1 or z.shape != beta.shape or z.size < 2:  # modified
+            raise CAMBValueError("z and beta must be 1D arrays of the same length (at least 2 points)")  # modified
+        if np.any(np.diff(z) <= 0):  # modified
+            raise CAMBValueError("birefringence table redshifts must be strictly increasing")  # modified
+        self.birefringence_z = z  # modified
+        self.birefringence_beta = beta  # modified
+        return self  # modified
 
     def set_for_lmax(
         self,

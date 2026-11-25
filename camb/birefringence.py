@@ -1,4 +1,4 @@
-# claude: helpers for time-varying cosmic birefringence (whole file added)
+# modified: helpers for time-varying cosmic birefringence (whole file added)
 r"""
 Time-varying cosmic birefringence from an axion-like field.
 
@@ -69,7 +69,7 @@ def solve_axion_field(results, mass_ev, a_ini=1e-8, wkb_ratio=1000.0, rtol=1e-10
     if not sol.success:
         raise RuntimeError(sol.message)
     x_end = sol.t[-1]
-    f0 = sol.y[0, -1] if x_end >= -1e-12 else 0.0
+    f0 = sol.y[0, -1] if x_end >= -1e-12 else 0.0 
     return sol.sol, x_end, f0
 
 

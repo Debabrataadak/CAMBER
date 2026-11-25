@@ -195,12 +195,12 @@
 
         type(TCustomSourceParams) :: CustomSources
 
-        ! claude: isotropic cosmic birefringence angle beta in degrees. E is multiplied by cos 2beta and
-        ! claude: B = E x sin 2beta inside the line-of-sight integral (flat models, scalar modes only)
-        real(dl) :: birefringence_angle = 0._dl  ! claude
-        ! claude: optional time-varying rotation: beta(z) in degrees for a photon emitted at redshift z, on a grid of
-        ! claude: increasing z. When set (2 or more points) it is used instead of birefringence_angle
-        real(dl), allocatable :: birefringence_z(:), birefringence_beta(:)  ! claude
+        ! modified: isotropic cosmic birefringence angle beta in degrees. E is multiplied by cos 2beta and
+        ! modified: B = E x sin 2beta inside the line-of-sight integral (flat models, scalar modes only)
+        real(dl) :: birefringence_angle = 0._dl  ! modified
+        ! modified: optional time-varying rotation: beta(z) in degrees for a photon emitted at redshift z, on a grid of
+        ! modified: increasing z. When set (2 or more points) it is used instead of birefringence_angle
+        real(dl), allocatable :: birefringence_z(:), birefringence_beta(:)  ! modified
     contains
     procedure, nopass :: PythonClass => CAMBparams_PythonClass
     procedure, nopass :: SelfPointer => CAMBparams_SelfPointer
@@ -529,23 +529,23 @@
 
     end function CAMBparams_PrimordialPower
 
-    logical function BirefringenceTableSet(P) ! claude
-    ! claude: true if a beta(z) table with at least two points is set
-    class(CAMBParams), intent(in) :: P ! claude
+    logical function BirefringenceTableSet(P) ! modified
+    ! modified: true if a beta(z) table with at least two points is set
+    class(CAMBParams), intent(in) :: P ! modified
 
-    BirefringenceTableSet = .false. ! claude
-    if (allocated(P%birefringence_z) .and. allocated(P%birefringence_beta)) & ! claude
-        BirefringenceTableSet = size(P%birefringence_z) >= 2 .and. & ! claude
-        size(P%birefringence_z) == size(P%birefringence_beta) ! claude
+    BirefringenceTableSet = .false. ! modified
+    if (allocated(P%birefringence_z) .and. allocated(P%birefringence_beta)) & ! modified
+        BirefringenceTableSet = size(P%birefringence_z) >= 2 .and. & ! modified
+        size(P%birefringence_z) == size(P%birefringence_beta) ! modified
 
-    end function BirefringenceTableSet ! claude
+    end function BirefringenceTableSet ! modified
 
-    logical function HasBirefringence(P) ! claude
-    ! claude: true if any birefringence is requested, constant angle or beta(z) table
-    class(CAMBParams), intent(in) :: P ! claude
+    logical function HasBirefringence(P) ! modified
+    ! modified: true if any birefringence is requested, constant angle or beta(z) table
+    class(CAMBParams), intent(in) :: P ! modified
 
-    HasBirefringence = P%birefringence_angle /= 0._dl .or. BirefringenceTableSet(P) ! claude
+    HasBirefringence = P%birefringence_angle /= 0._dl .or. BirefringenceTableSet(P) ! modified
 
-    end function HasBirefringence ! claude
+    end function HasBirefringence ! modified
 
     end module model
