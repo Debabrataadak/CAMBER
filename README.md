@@ -1,4 +1,4 @@
-# CAMBER: <ins>CAMB</ins> with <ins>E</ins>volving <ins>R</ins>otation
+# CAMBER: <code><b>CAMB</b> with <b>E</b>volving <b>R</b>otation</code>
 
 CAMBER is a modified version of [CAMB](https://github.com/cmbant/CAMB) 2.0.5 (Lewis & Challinor) that computes the
 CMB power spectra in the presence of **cosmic birefringence**, a rotation of the CMB polarization plane by an
