@@ -1,4 +1,6 @@
-# CAMBER: CAMB with Evolving Rotation
+# CAMBER
+
+**`CAMB`** with **E**volving **R**otation
 
 CAMBER is a modified version of [CAMB](https://github.com/cmbant/CAMB) 2.0.5 (Lewis & Challinor) that computes the
 CMB power spectra in the presence of **cosmic birefringence**, a rotation of the CMB polarization plane by an
